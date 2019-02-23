@@ -44,7 +44,7 @@ def create_table_from_dict(con,table_name,key_dict):
             sql += "`"+key+"`"+" int(11) NOT NULL,"
         if value == 0:
             sql += "`"+key+"`"+" varchar(255) NOT NULL,"
-    sql += "PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    sql += "PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
     print('[processing]create_table拼接sql为:'+sql)
     try:
         con.cursor().execute(sql)
