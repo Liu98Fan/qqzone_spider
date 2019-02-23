@@ -16,7 +16,8 @@ yarn-error.log*
 .editorconfig
 .git
 #json数据忽略
-.json
-.ini
-.txt
-.log
+*.json
+*.ini
+*.txt
+*.log
+*.pyc

@@ -26,9 +26,9 @@ def get_emotion_url(spider,qq,pos=0):
         "format": "jsonp",
         "need_private_comment": 1,
         "g_tk": spider.g_tk,
-        "qzonetoken":spider.qztoken,
-        "uin":qq,
-        "pos":pos
+        "qzonetoken": spider.qztoken,
+        "uin": qq,
+        "pos": pos
     }
     url = url + parse.urlencode(params)
     print('[processing]获取'+str(qq)+'说说链接为:'+url)
@@ -37,7 +37,7 @@ def emotion_save_as_file (jsons,fileName="friend_json.json"):
     try:
         w = open('./'+fileName,'a+',encoding='utf-8')
         # w.write(str(json))
-        json.dump(jsons,w)
+        json.dump(jsons,w,ensure_ascii=False)
         w.close()
         print('[success]json文件写入成功')
     except Exception as e:
@@ -48,7 +48,7 @@ def get_emotion(spider,qq):
         print('[Error]:尚未登陆')
         exit(0)
     try:
-        url = get_emotion_url(spider,qq)
+        url = get_emotion_url(spider,qq,0)
     except Exception as e:
         print("[Error]查询好友url拼接失败"+e)
         exit(1)
@@ -66,6 +66,13 @@ def get_emotion(spider,qq):
             print('[Warning]total为0')
     else:
         print('[Warning]没有total这个字段')
+        if(j['message']=='对不起,主人设置了保密,您没有权限查看'):
+            print('[Warning]'+str(qq)+'设置了权限，无法访问')
+            file = open('./permission','a+',encoding='utf-8')
+            file.write(str(qq)+'\n')
+            file.close()
+        page_num = 0
+
     # print(j)
     print('[processing]共'+str(page_num)+'页数据，解析开始-----------------------')
     con = spider.db
@@ -81,33 +88,35 @@ def get_emotion(spider,qq):
             time.sleep(2)
             try:
                 print('[processing]正在解析'+str(qq)+'第'+str(index)+'页说说数据')
-                page = getattr(spider,'req').get(url=url,headers=spider.headers,timeout=60)
+                page = getattr(spider,'req').get(url=u,headers=spider.headers,timeout=60)
             except Exception as e :
                 print('[Error]爬取说说信息出错:'+e)
                 exit(1)
             j = parse_page(page)#解析成json数据
             template_data = emotion_tb_keys
+            if j is None:
+                continue 
             try:
                 template_data['id'] = 'null'
-                template_data['name'] = j['logininfo']['name']
-                template_data['uin'] = j['logininfo']['uin']
+                template_data['name'] = j['usrinfo']['name']
+                template_data['uin'] = j['usrinfo']['uin']
                 for index,item in enumerate(j['msglist']):
                     template_data['content'] = item['content']
                     template_data['createTime'] = item['createTime']
                     template_data['created_time'] = item['created_time']
-                    template_data['editMask'] = item['editMask']
+                    template_data['editMask'] = item['editMask'] if 'editMask' in list(item.keys()) else 'null'
                     template_data['tid'] = item['tid']
                     template_data['cmtnum'] = item['cmtnum']
-                    template_data['type'] = item['conlist'][0]['type']
+                    template_data['type'] = item['conlist'][0]['type'] if 'conlist' in list(item.keys()) and item['conlist']!=None and'type' in list(item['conlist'][0].keys()) else 'null'
                     template_data['source_name'] = item['source_name']
                     template_data['pic'] = item['pic'] if 'pic' in list(item.keys()) else 'null'
                     template_data['commentlist'] = str(item['commentlist']).replace("\"","\\\"") if 'commentlist' in list(item.keys()) else 'null'
                     insert_emotion(con,"emotions_tb",template_data)
                     emotion_save_as_file(template_data,"emotion_"+str(qq)+"_json.json")
             except Exception as e:
-                print('[Error]不存在字段：'+str(e))
+                print('[Error]template_data合并错误：'+str(e))
 if __name__ == "__main__":
-    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\qqzone\\userinfo.ini'
     spider = Spider(dirPath)
     spider.login()
     get_emotion(spider,214704958)

@@ -116,7 +116,7 @@ class Spider(object):
         #还要获取一个qzonetoken，它也很重要
         html = self.web.page_source
         g_qzonetoken = re.search('window\.g_qzonetoken = \(function\(\)\{ try\{return (.*?);\} catch\(e\)',html)  # 从网页源码中提取g_qzonetoken
-        g_qzonetoken = str(g_qzonetoken[0]).split('\"')[1]
+        g_qzonetoken = str(g_qzonetoken.group(0)).split('\"')[1]
         self.qztoken = g_qzonetoken
         print('计算的qzonetoken值为'+g_qzonetoken)
 
