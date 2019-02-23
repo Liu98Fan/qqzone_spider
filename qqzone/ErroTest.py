@@ -1,5 +1,7 @@
 import pymysql as mysql 
+from GetEmotions import *
 import os
+import json
 from Spider import Spider 
 '''
 此文件用于错误测试，因为空间说说量大，内容较多，且很乱，
@@ -23,7 +25,7 @@ def get_connection():
 def save_cookies(cookies):
     if cookies is not None:
         try:
-            file = open('./qqzone/cookies','w+',encoding='utf-8')
+            file = open('./cookies','w+',encoding='utf-8')
             file.write(cookies)
             print('【Success】cookie写入成功\n【cookie】:'+str(cookies))
         except Exception as e:
@@ -35,9 +37,9 @@ def save_cookies(cookies):
         exit(0)
 
 def read_cookies():
-    if os.path.exists('./qqzone/cookies'):
+    if os.path.exists('./cookies'):
         try:
-            file = open('./qqzone/cookies','r+',encoding='utf-8')
+            file = open('./cookies','r+',encoding='utf-8')
             cookie = file.read()
             if cookie is not None:
                 return cookie
@@ -51,8 +53,21 @@ def read_cookies():
         print('【Warning】找不到cookie文件')
         exit(0)
 
-if __name__ == '__main__':
-    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+def get_cookie(dirPath):
+    #dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
     spider = Spider(dirPath)
     spider.login()
     save_cookies(spider.cookies)
+
+if __name__ == '__main__':
+    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
+    #cookie = read_cookies()
+    spider = Spider(dirPath)
+    spider.login()
+    uin = 214704958
+    pos = 0
+    url = get_emotion_url(spider,uin,pos)
+    page = spider.get_url_response(url)
+    get_template_data_from_page(spider.db,page)
+
+

@@ -50,7 +50,7 @@ def get_page_num(spider,qq):
     return page_num
 
 if __name__ == "__main__":
-    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\qqzone\\userinfo.ini'
+    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
     spider = Spider(dirPath)
     spider.login()
     get_all_emotion(spider)

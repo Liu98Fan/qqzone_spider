@@ -4,11 +4,14 @@ from GetFriends import parse_page
 from urllib import parse
 import re
 import json
+import time
 
 #0表示varchar255 -1表示text 1表示int
 emotion_tb_keys = {'id':-2,'name':0,'uin':0,'content':-1,
 'createTime':0,'created_time':0,'editMask':0,
 'tid':0,'commentlist':-1,'type':0,'pic':-1,'source_name':0,'cmtnum':1}
+
+emotion_number_tb_keys = {'id':-2,'name':0,'uin':0,'total':1,'count_time':0}
 
 def get_emotion_url(spider,qq,pos=0):
     url='https://h5.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msglist_v6?'
@@ -44,6 +47,7 @@ def emotion_save_as_file (jsons,fileName="friend_json.json"):
         print('[Error]文件写入失败'+str(e))
         exit(1)
 def get_emotion(spider,qq):
+    con = spider.db
     if not getattr(spider,'is_login',False):
         print('[Error]:尚未登陆')
         exit(0)
@@ -66,16 +70,26 @@ def get_emotion(spider,qq):
             print('[Warning]total为0')
     else:
         print('[Warning]没有total这个字段')
+        total = -1
         if(j['message']=='对不起,主人设置了保密,您没有权限查看'):
             print('[Warning]'+str(qq)+'设置了权限，无法访问')
             file = open('./permission','a+',encoding='utf-8')
             file.write(str(qq)+'\n')
             file.close()
         page_num = 0
-
+    if not table_is_exist(con,"emotion_total_tb"):
+        create_table_from_dict(con,"emotion_total_tb",emotion_number_tb_keys)
+    total_item = emotion_number_tb_keys
+    total_item['id'] = 'null'
+    total_item['name'] = j['usrinfo']['name']
+    total_item['uin'] = qq
+    total_item['total'] = total
+    total_item['count_time'] = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    #记录说说总数
+    insert_emotion_total(con,"emotion_total_tb",total_item)
     # print(j)
     print('[processing]共'+str(page_num)+'页数据，解析开始-----------------------')
-    con = spider.db
+    
     if not table_is_exist(con,"emotions_tb"):
         create_table_from_dict(con,"emotions_tb",emotion_tb_keys)
     '''此处开始进行迭代操作了'''
@@ -84,6 +98,7 @@ def get_emotion(spider,qq):
         pos = t*20
         url_list.append(get_emotion_url(spider,qq,pos))
     if len(url_list)>0 :
+        break_flag = 0
         for index,u in enumerate(url_list):
             time.sleep(2)
             try:
@@ -100,21 +115,65 @@ def get_emotion(spider,qq):
                 template_data['id'] = 'null'
                 template_data['name'] = j['usrinfo']['name']
                 template_data['uin'] = j['usrinfo']['uin']
-                for index,item in enumerate(j['msglist']):
-                    template_data['content'] = item['content']
-                    template_data['createTime'] = item['createTime']
-                    template_data['created_time'] = item['created_time']
-                    template_data['editMask'] = item['editMask'] if 'editMask' in list(item.keys()) else 'null'
-                    template_data['tid'] = item['tid']
-                    template_data['cmtnum'] = item['cmtnum']
-                    template_data['type'] = item['conlist'][0]['type'] if 'conlist' in list(item.keys()) and item['conlist']!=None and'type' in list(item['conlist'][0].keys()) else 'null'
-                    template_data['source_name'] = item['source_name']
-                    template_data['pic'] = item['pic'] if 'pic' in list(item.keys()) else 'null'
-                    template_data['commentlist'] = str(item['commentlist']).replace("\"","\\\"") if 'commentlist' in list(item.keys()) else 'null'
-                    insert_emotion(con,"emotions_tb",template_data)
-                    emotion_save_as_file(template_data,"emotion_"+str(qq)+"_json.json")
+                ##为了防止有些人说说设置权限，一条都看不了
+                if j['msglist'] is not None:
+                    for index,item in enumerate(j['msglist']):
+                        template_data['content'] = item['content']
+                        template_data['createTime'] = item['createTime']
+                        template_data['created_time'] = item['created_time']
+                        template_data['editMask'] = item['editMask'] if 'editMask' in list(item.keys()) else 'null'
+                        template_data['tid'] = item['tid']
+                        template_data['cmtnum'] = item['cmtnum']
+                        template_data['type'] = item['conlist'][0]['type'] if 'conlist' in list(item.keys()) and item['conlist']!=None and'type' in list(item['conlist'][0].keys()) else 'null'
+                        template_data['source_name'] = item['source_name']
+                        template_data['pic'] = item['pic'] if 'pic' in list(item.keys()) else 'null'
+                        template_data['commentlist'] = str(item['commentlist']).replace("\"","\\\"") if 'commentlist' in list(item.keys()) else 'null'
+                        insert_emotion(con,"emotions_tb",template_data)
+                        emotion_save_as_file(template_data,"emotion_"+str(qq)+"_json.json")
+                else:
+                    print('[Warning]'+str(template_data['uin'])+'在此页可见数是0')
+                    ##也不需要进行接下页的访问，可以直接换人
+                    break_flag = 1
             except Exception as e:
                 print('[Error]template_data合并错误：'+str(e))
+            if break_flag == 1:
+                break
+def insert_total(con,total_item):
+    if not table_is_exist(con,"emotion_total_tb"):
+        create_table_from_dict(con,"emotion_total_tb",emotion_number_tb_keys)
+    insert_emotion_total(con,"emotion_total_tb",total_item)
+
+def get_template_data_from_page(con,page):
+    j = parse_page(page)#解析成json数据
+    template_data = emotion_tb_keys
+    if j is None:
+        raise Exception('None') 
+    try:
+        template_data['id'] = 'null'
+        template_data['name'] = j['usrinfo']['name']
+        template_data['uin'] = j['usrinfo']['uin']
+        ##为了防止有些人说说设置权限，一条都看不了
+        if j['msglist'] is not None:
+            for index,item in enumerate(j['msglist']):
+                template_data['content'] = item['content']
+                template_data['createTime'] = item['createTime']
+                template_data['created_time'] = item['created_time']
+                template_data['editMask'] = item['editMask'] if 'editMask' in list(item.keys()) else 'null'
+                template_data['tid'] = item['tid']
+                template_data['cmtnum'] = item['cmtnum']
+                template_data['type'] = item['conlist'][0]['type'] if 'conlist' in list(item.keys()) and item['conlist']!=None and'type' in list(item['conlist'][0].keys()) else 'null'
+                template_data['source_name'] = item['source_name']
+                template_data['pic'] = item['pic'] if 'pic' in list(item.keys()) else 'null'
+                template_data['commentlist'] = str(item['commentlist']).replace("\"","\\\"") if 'commentlist' in list(item.keys()) else 'null'
+                insert_emotion(con,"emotions_tb",template_data)
+                emotion_save_as_file(template_data,"emotion_"+str(qq)+"_json.json")
+        else:
+            print('[Warning]'+str(template_data['uin'])+'在此页可见数是0')
+            ##也不需要进行接下页的访问，可以直接换人
+    except Exception as e:
+        print('[Error]template_data合并错误：'+str(e))
+
+
 if __name__ == "__main__":
     dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\qqzone\\userinfo.ini'
     spider = Spider(dirPath)

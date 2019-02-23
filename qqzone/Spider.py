@@ -10,6 +10,8 @@ import re
 import pymysql as mysql
 
 class Spider(object):
+    
+
     def __init__(self, dir):
         #读取配置文件
         config = configparser.ConfigParser(allow_no_value=False)
@@ -72,28 +74,31 @@ class Spider(object):
             print(e)
 
     
-    def login(self):
-        self.web.switch_to_frame('login_frame')
-        # 跳转到账号密码登陆界面
-        log = self.web.find_element_by_id("switcher_plogin")
-        log.click()
-        time.sleep(1)
-        # 填充账号密码
-        username = self.web.find_element_by_id('u')
-        username.send_keys(self.__username)
-        ps = self.web.find_element_by_id('p')
-        ps.send_keys(self.__password)
-        # 登陆按钮
-        btn = self.web.find_element_by_id('login_button')
-        time.sleep(1)
-        btn.click()
-        time.sleep(2)
-
-        self.web.get('https://user.qzone.qq.com/{}'.format(self.__username))
-        cookie = ''
-        for elem in self.web.get_cookies():
-            cookie += elem["name"] + "=" + elem["value"] + ";"
-        self.cookies = cookie
+    def login(self,**kwargs):
+        if 'cookie' not in list(kwargs.keys()):
+            self.web.switch_to_frame('login_frame')
+            # 跳转到账号密码登陆界面
+            log = self.web.find_element_by_id("switcher_plogin")
+            log.click()
+            time.sleep(1)
+            # 填充账号密码
+            username = self.web.find_element_by_id('u')
+            username.send_keys(self.__username)
+            ps = self.web.find_element_by_id('p')
+            ps.send_keys(self.__password)
+            # 登陆按钮
+            btn = self.web.find_element_by_id('login_button')
+            time.sleep(1)
+            btn.click()
+            time.sleep(2)
+            self.web.get('https://user.qzone.qq.com/{}'.format(self.__username))
+            c = self.web.get_cookies()
+            cookie = ''
+            for elem in c:
+                cookie += elem["name"] + "=" + elem["value"] + ";"
+            self.cookies = cookie
+        else:
+            self.cookies = kwargs['cookie']
         #获取g_tk参数，这个参数很重要
         self.get_g_tk()
         self.headers['Cookie'] = self.cookies
@@ -120,6 +125,13 @@ class Spider(object):
         self.qztoken = g_qzonetoken
         print('计算的qzonetoken值为'+g_qzonetoken)
 
+    def get_url_response(self,url):
+        try:
+            page = self.req.get(url=url,headers=self.headers,timeout=60)
+        except Exception as e :
+            print('[Error]爬取说说信息出错:'+e)
+            exit(1)
+        return page
 if __name__ == '__main__':
     dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
     spider = Spider(dirPath)

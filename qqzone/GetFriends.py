@@ -86,7 +86,7 @@ def process_friend(spider, json):
 
 def parse_page(page):
     try:
-        j = json.loads(re.match(".*?({.*}).*", str(page.content,'utf-8'), re.S).group(1))
+        j = json.loads(re.match(".*?({.*}).*", page.text, re.S).group(1))
         return j
     except Exception as e:
         print('[Error]解析好友数据失败' + str(e))
