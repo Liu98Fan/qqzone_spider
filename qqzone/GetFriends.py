@@ -21,7 +21,14 @@ def get_url_partial(spider):
     print('[processing]获取前200亲密度好友链接为:' + url)
     return url
 
-
+def get_friend_list(spider):
+    try:
+        friend_list = get_friend_number(spider.db,spider._Spider__username)
+        return friend_list
+    except Exception as e:
+        get_friends_partial(spider)
+        return get_friend_list(spider)
+        
 def get_friends_partial(spider):
     if not getattr(spider, 'is_login', False):
         print('[Error]:尚未登陆')
@@ -53,7 +60,7 @@ def save_as_file(jsons, fileName="friend_json.json"):
         print('[success]json文件写入成功')
     except Exception as e:
         print('[Error]文件写入失败' + str(e))
-        exit(1)
+        #exit(1)
 
 
 def read_from_file(filePath):

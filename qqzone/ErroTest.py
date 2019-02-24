@@ -6,6 +6,7 @@ import chardet
 import os
 import json
 from Spider import Spider 
+from GetFriends import *
 '''
 此文件用于错误测试，因为空间说说量大，内容较多，且很乱，
 很多bug错误都不明白怎么回事，因此可以通过此文件对某个链接或文本进行单独测试
@@ -87,13 +88,13 @@ def emoj_test():
     # print(fencoding)
     insert_emotion(con,"emotions_tb2",test_data)
 
-def get_residue_list(processed_list=[]):
+def get_residue_list(spider,processed_list=[]):
     if len(processed_list) == 0:
         file = open('./processed_list','r',encoding= 'utf-8')
         processed_list = str(file.read())
         processed_list = '{"processed_list":'+processed_list.replace("'","\"")+'}'
         processed_list = json.loads(processed_list)['processed_list']
-    friend_list = get_friend_number(get_connection(),'214704958')
+    friend_list = get_friend_list(spider)
     residue_list = []
     for item in friend_list:
         item=item[0]

@@ -7,6 +7,9 @@ from GetFriends import *
 import copy
 from ErroTest import get_residue_list
 
+
+
+
 def get_all_emotion(spider,**kwarg):
     count = 0
     if len(kwarg)>0: 
@@ -14,14 +17,8 @@ def get_all_emotion(spider,**kwarg):
         processed_list = kwarg['processed_list']
         count = kwarg['count']
     else:
-        try:
-            friend_list = get_friend_number(spider.db,spider._Spider__username)
-            processed_list = []
-        except Exception as e:
-            get_friends_partial(spider)
-            get_all_emotion(spider)
-
-
+        friend_list = get_friend_list(spider)
+        processed_list = []
     print('[logging]好友列表长度为:'+str(len(friend_list))+','+str(friend_list))
     
     residue_list = copy.copy(friend_list)
@@ -90,18 +87,18 @@ def get_page_num(spider,qq):
     return page_num
 
 if __name__ == "__main__":
-    [processed_list,residue_list] = get_residue_list()
+    
+    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+    spider = Spider(dirPath)
+    spider.login()
+    #get_all_emotion(spider)
+    [processed_list,residue_list] = get_residue_list(spider)
     param =  {
             'processed_list':processed_list,
             'residue_list':residue_list,
             'friend_list':residue_list,
             'count':0
             }
-    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
-    spider = Spider(dirPath)
-    spider.login()
-    #get_all_emotion(spider)
-    
     get_all_emotion(spider,processed_list = param['processed_list'],
                 residue_list = param['residue_list'],
                 friend_list = param['friend_list'],
