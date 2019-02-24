@@ -61,7 +61,7 @@ def insert_friend(con,table_name,item):
 
 def insert_emotion(con,table_name,item):
     sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";";
-    print('[processing]insert_emotion拼接sql为:'+sql)
+    print('[processing]insert_emotion拼接sql为:'+str(sql))
     execute_sql(con,sql,item)
 
 def insert_emotion_total(con,table_name,item):
@@ -76,7 +76,7 @@ def execute_sql(con, sql,item):
         print('[Success]执行成功')
     except Exception as e:
         print('[Error]记录插入失败'+str(e))
-        er = open('./error_'+str(item['uin'] if item['uin'] is not None else 'unkown')+str(int(time.time()))+'_emotion.json','a+',encoding='utf-8')
+        er = open('./spiderLog/error_'+str(item['uin'] if item['uin'] is not None else 'unkown')+'_'+str(int(time.time()))+'_emotion.json','a+',encoding='utf-8')
         json.dump(item,er,ensure_ascii=False)
         print('[Logging]错误说说记录成功')
 

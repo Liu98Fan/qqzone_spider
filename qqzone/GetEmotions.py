@@ -118,7 +118,7 @@ def get_emotion(spider,qq):
                 ##为了防止有些人说说设置权限，一条都看不了
                 if j['msglist'] is not None:
                     for index,item in enumerate(j['msglist']):
-                        template_data['content'] = item['content']
+                        template_data['content'] = str(item['content'].replace("\"","\\\"")).replace("\\","\\\\")
                         template_data['createTime'] = item['createTime']
                         template_data['created_time'] = item['created_time']
                         template_data['editMask'] = item['editMask'] if 'editMask' in list(item.keys()) else 'null'

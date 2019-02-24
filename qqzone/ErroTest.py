@@ -1,6 +1,7 @@
-
+# -*- coding:utf-8 -*-
 import pymysql as mysql 
 from GetEmotions import *
+import chardet
 import os
 import json
 from Spider import Spider 
@@ -11,13 +12,13 @@ from Spider import Spider
 db_url = 'localhost'
 db_username = 'root'
 db_password = 'root'
-db_base = 'qq'
+db_base = 'qqzone'
 config = {
           'host':'127.0.0.1',
           'port':3306,
           'user':'root',
           'password':'root',
-          'db':'qq',
+          'db':'qqzone',
           'charset':'utf8mb4'   
           }
 
@@ -81,7 +82,9 @@ def emoj_test():
     print(test_data)
     test_data['id'] = 'null'
     test_data['commentlist'] = "[{'create_time': 1539058403, 'reply_num': 0, 'tid': 1, 't2_source': 1, 'createTime': '2018年10月09日', 'createTime2': '2018-10-09 12:13:23', 'source_name': '', 'uin': 1140373223, 'abledel': 0, 't2_subtype': 2, 'source_url': '', 'stored_extend_info': [{'k': 'diy_font_id', 'v': '16164'}, {'k': 'diy_font_type', 'v': '2'}, {'k': 'diy_font_url', 'v': 'https://qzonestyle.gtimg.cn/qzone/space_item/material/CustomFont/org/4/16164/TTTGB-Medium.zip'}], 'IsPasswordLuckyMoneyCmtRight': '', 'name': '晨妹🦄', 'content': '哈哈哈', 'private': 0, 't2_termtype': 2}, {'create_time': 1539060591, 'pic': [{'s_height': 0, 'b_height': 0, 's_width': 0, 'who': 1, 'b_width': 0, 's_url': 'http://b218.photo.store.qq.com/psb?/V10r61W42vvkEv/tx5QUHq*GvCbbKQO7rLSPsfM34qL7sOFw6G6qjmtNKQ!/b/dNoAAAAAAAAA&bo=ZAIRAgAAAAAREFI!', 'hd_height': 0, 'hd_width': 0, 'hd_url': 'http://b218.photo.store.qq.com/psb?/V10r61W42vvkEv/tx5QUHq*GvCbbKQO7rLSPsfM34qL7sOFw6G6qjmtNKQ!/b/dNoAAAAAAAAA&bo=ZAIRAgAAAAAREFI!', 'b_url': 'http://b218.photo.store.qq.com/psb?/V10r61W42vvkEv/tx5QUHq*GvCbbKQO7rLSPsfM34qL7sOFw6G6qjmtNKQ!/b/dNoAAAAAAAAA&bo=ZAIRAgAAAAAREFI!', 'o_url': 'http://b218.photo.store.qq.com/psb?/V10r61W42vvkEv/tx5QUHq*GvCbbKQO7rLSPsfM34qL7sOFw6G6qjmtNKQ!/b/dNoAAAAAAAAA&bo=ZAIRAgAAAAAREFI!'}], 'tid': 2, 'rich_info': [{'type': 1, 'who': 1, 'burl': 'http://b218.photo.store.qq.com/psb?/V10r61W42vvkEv/tx5QUHq*GvCbbKQO7rLSPsfM34qL7sOFw6G6qjmtNKQ!/b/dNoAAAAAAAAA&bo=ZAIRAgAAAAAREFI!'}], 'createTime': '2018年10月09日', 'createTime2': '2018-10-09 12:49:51', 'source_name': '', 'uin': 649531016, 'content': '', 'abledel': 0, 't2_subtype': 2, 'reply_num': 0, 'source_url': '', 't2_source': 1, 'IsPasswordLuckyMoneyCmtRight': '', 'name': '\u202d\u202d \u202d\u202d', 'pictotal': 1, 'private': 0, 't2_termtype': 2}]"
-    insert_emotion(con,"emotion_tb_test",test_data)
+    # fencoding=chardet.detect("[{'create_time': 1539058403, 'reply_".encode().decode('urf8mb4'))
+    # print(fencoding)
+    insert_emotion(con,"emotions_tb2",test_data)
 
 def get_test_data(key_dict):
     for key,values in key_dict.items():           
