@@ -29,14 +29,14 @@ def get_friends_partial(spider):
     try:
         url = get_url_partial(spider)
     except Exception as e:
-        print("[Error]查询好友url拼接失败" + e)
+        print("[Error]查询好友url拼接失败" + str(e))
         exit(1)
     page = ''
     try:
         page = getattr(spider, 'req').get(
             url=url, headers=spider.headers, timeout=60)
     except Exception as e:
-        print('[Error]爬取亲密度好友信息出错:' + e)
+        print('[Error]爬取亲密度好友信息出错:' + str(e))
         exit(1)
     json = parse_page(page)
     save_as_file(json, "friend" + str(spider._Spider__username) + "_json.json")

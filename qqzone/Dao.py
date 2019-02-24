@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import re
 import json
 import time
+import os 
 #判断表是否存在
 def table_is_exist(con,table_name):
     sql = "show tables;"
@@ -55,19 +56,32 @@ def create_table_from_dict(con,table_name,key_dict):
 
 def insert_friend(con,table_name,item):
     
-    sql = "insert into "+table_name +"(id,"+ list_as_param(list(item.keys()))[1:]+"values(null,"+list_as_param_hascode(list(item.values()))[1:]+";";
+    sql = "insert into "+table_name +"(id,"+ list_as_param(list(item.keys()))[1:]+"values(null,"+list_as_param_hascode(list(item.values()))[1:]+";"
     print('[processing]insert_friend拼接sql为:'+sql)
     execute_sql(con,sql,item)
 
 def insert_emotion(con,table_name,item):
-    sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";";
+    sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";"
     print('[processing]insert_emotion拼接sql为:'+str(sql))
     execute_sql(con,sql,item)
 
 def insert_emotion_total(con,table_name,item):
-    sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";";
+    sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";"
     print('[processing]insert_emotion_total拼接sql为:'+sql)
     execute_sql(con,sql,item)
+
+
+def update_emotion_total(con,table_name,item):
+    sql = "update  "+table_name + 'set ' 
+    count = 0
+    for key,value in item.items():
+        count += 1 
+        if key != 'id':
+            sql += key + '= \"' + str(value) +"\""
+            if count != len(item.keys()):
+                sql += ','          
+    print('[processing]update_emotion_total拼接sql为:'+sql)
+    
 
 def execute_sql(con, sql,item):
     try:
@@ -76,9 +90,29 @@ def execute_sql(con, sql,item):
         print('[Success]执行成功')
     except Exception as e:
         print('[Error]记录插入失败'+str(e))
+        if not os.path.exists('./spiderLog'):
+            os.mkdir('./spiderLog')
         er = open('./spiderLog/error_'+str(item['uin'] if item['uin'] is not None else 'unkown')+'_'+str(int(time.time()))+'_emotion.json','a+',encoding='utf-8')
         json.dump(item,er,ensure_ascii=False)
         print('[Logging]错误说说记录成功')
+
+def is_repetitive(con,table_name,id,column_name):
+    try:
+        sql = "select count(*) from "+table_name +" where "+column_name +'=\''+id+'\';'
+        cursor = con.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        if result[0][0]>0:
+            print('[Warning]该记录已存在，更新或跳过')
+            return True
+        else :
+            return False
+        #print(str(result))
+    except Exception as e:
+        print('[Error]重复检查出错，可能是列名出现错误,默认返回False:'+str(e))
+        return False
+
+
 
 def list_as_param_hascode(list):
     param = "("
@@ -108,7 +142,7 @@ def get_friend_number(con,master):
         return list(result)
     except Exception as e:
         print('[Error]获取数据库好友uin失败'+str(e))
-        exit(1)
+        raise Exception()
         
 if __name__ =="__main__":
     list = ['uin', 'name', 'index', 'chang_pos', 'score', 'special_flag', 'uncare_flag', 'img']

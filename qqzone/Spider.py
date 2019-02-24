@@ -32,6 +32,7 @@ class Spider(object):
             'accept-language': 'zh-CN,zh;q=0.9',
             'Cookie': '',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
+            ,'kepp_alive':'False'
         }
         print('[success]初始化webdriver.chrom成功！')
 
@@ -97,6 +98,8 @@ class Spider(object):
             for elem in c:
                 cookie += elem["name"] + "=" + elem["value"] + ";"
             self.cookies = cookie
+            self.req.session().kepp_alive = False
+            
         else:
             self.cookies = kwargs['cookie']
         #获取g_tk参数，这个参数很重要

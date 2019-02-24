@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import pymysql as mysql 
 from GetEmotions import *
+from Dao import *
 import chardet
 import os
 import json
@@ -86,12 +87,33 @@ def emoj_test():
     # print(fencoding)
     insert_emotion(con,"emotions_tb2",test_data)
 
+def get_residue_list(processed_list=[]):
+    if len(processed_list) == 0:
+        file = open('./processed_list','r',encoding= 'utf-8')
+        processed_list = str(file.read())
+        processed_list = '{"processed_list":'+processed_list.replace("'","\"")+'}'
+        processed_list = json.loads(processed_list)['processed_list']
+    friend_list = get_friend_number(get_connection(),'214704958')
+    residue_list = []
+    for item in friend_list:
+        item=item[0]
+        if item not in processed_list:
+            print('[logging]'+str(item)+'未处理')
+            residue_list.append(item)
+        else:
+            print('[logging]'+str(item)+'已处理')
+    print('[Success]完成，len(processed_list)='+str(len(processed_list))+',len(residue_list)='+str(len(residue_list))+',len(friend_list)='+str(len(friend_list)))    
+    return processed_list ,residue_list
 def get_test_data(key_dict):
     for key,values in key_dict.items():           
         if values != 1:
             values = 'test'
     return key_dict
-            
+
+def repetitive_test():
+    connection = get_connection()
+    return is_repetitive(connection,"emotion_tb_test",'1','tid')
+
 if __name__ == '__main__':
     # dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
     # #cookie = read_cookies()
@@ -102,6 +124,9 @@ if __name__ == '__main__':
     # url = get_emotion_url(spider,uin,pos)
     # page = spider.get_url_response(url)
     # get_template_data_from_page(spider.db,page)
-    emoj_test()
-
-
+    #-------------------------
+    #emoj_test()
+    #------------------------
+    #print(repetitive_test())
+    #-------------------------
+    get_residue_list()
