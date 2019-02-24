@@ -5,6 +5,7 @@ from urllib import parse
 import re
 import json
 import time
+import requests
 
 #0表示varchar255 -1表示text 1表示int
 emotion_tb_keys = {'id':-2,'name':0,'uin':0,'content':-1,
@@ -112,8 +113,9 @@ def get_emotion(spider,qq):
                 j = parse_page(page)#解析成json数据
                 if type(page) == 'ConnectionError':
                     raise ConnectionError()
-            except ConnectionError as ce:
-                print('[Error]ConnectionError发生在了解析'+str(qq)+'第'+str(index)+'页说说数据时，尝试解析下一页数据')
+            except requests.ConnectionError as ce:
+                print('[Error]ConnectionError发生在了解析'+str(qq)+'第'+str(index)+'页说说数据时，尝试解析下一页数据,先等待2秒缓冲')
+                time.sleep(2)
                 if(index<len(url_list)-1):
                     url_list.append(u)
                     continue

@@ -70,6 +70,10 @@ def insert_emotion_total(con,table_name,item):
     print('[processing]insert_emotion_total拼接sql为:'+sql)
     execute_sql(con,sql,item)
 
+def insert_like_Data(con,table_name,item):
+    sql = "insert into "+table_name + list_as_param(list(item.keys()))+"values"+list_as_param_hascode(list(item.values()))+";"
+    print('[processing]insert_like_Data拼接sql为:'+sql)
+    execute_sql(con,sql,item)
 
 def update_emotion_total(con,table_name,item):
     sql = "update  "+table_name + 'set ' 
@@ -80,7 +84,7 @@ def update_emotion_total(con,table_name,item):
             sql += key + '= \"' + str(value) +"\""
             if count != len(item.keys()):
                 sql += ','          
-    print('[processing]update_emotion_total拼接sql为:'+sql)
+    print('[processing]update拼接sql为:'+sql)
     
 
 def execute_sql(con, sql,item):
@@ -96,11 +100,15 @@ def execute_sql(con, sql,item):
         json.dump(item,er,ensure_ascii=False)
         print('[Logging]错误说说记录成功')
 
-def is_repetitive(con,table_name,id,column_name):
+def is_repetitive(con,table_name,id,column_name,**kwarg):
     try:
-        sql = "select count(*) from "+table_name +" where "+column_name +'=\''+id+'\';'
+        if len(kwarg)>0 and 'condition' in kwarg.keys():
+            sql = "select count(*) from "+table_name +" where "+column_name +'=\''+id+'\' and '+kwarg['condition']['column_name']+'=\''+str(kwarg['condition']['id'])+'\';'
+        else:
+            sql = "select count(*) from "+table_name +" where "+column_name +'=\''+id+'\';'
         cursor = con.cursor()
         cursor.execute(sql)
+        con.commit()
         result = cursor.fetchall()
         if result[0][0]>0:
             print('[Warning]该记录已存在，更新或跳过')
@@ -144,7 +152,17 @@ def get_friend_number(con,master):
         print('[Error]获取数据库好友uin失败,即将检查并重新建表'+str(e))
         raise e
         
-        
+def get_emotion(con,uin):
+    sql = "select uin,tid,name from emotions_tb where uin = '"+str(uin)+"'"
+    con = con.cursor()
+    try:
+        con.execute(sql)
+        result = con.fetchall()
+        return list(result)
+    except Exception as e:
+        print('[Error]获取数据库好友uin失败'+str(e))
+
+
 if __name__ =="__main__":
     list = ['uin', 'name', 'index', 'chang_pos', 'score', 'special_flag', 'uncare_flag', 'img']
     param = ''
