@@ -1,4 +1,42 @@
+**本人python经验不足，大一到大三多数在写java（目前大三），所以python的结构比较混乱，但是勉强实现了爬取10W+条说说的功能，且具有一点的错误处理机制。欢迎大佬指正不足，本人QQ214704958**
 
+# 项目依赖
+- configparser
+- selenium
+- pymysql
+
+# 配置文件
+初始化Spider的时候要传入一个配置文件的地址
+例如:
+```python
+if __name__ == "__main__":
+    
+    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+    spider = Spider(dirPath)
+```
+配置文件格式如下:
+```properties
+[my_info]
+number = QQ号
+password = 密码
+[db_info]
+url = 数据库url
+username = 数据库账号
+password = 密码
+name = 数据库名称
+```
+# 具体内容
+- Spider.py 爬虫主类，包含个人信息，requests，driver，数据库连接等
+- Dao.py 与数据库交互用，里面包含所需的所有数据库操作方法
+- GetFriends.py 获取好友方法，目前只实现了根据关注度获取前200个好友，支持json文件存储和数据库存储
+- GetEmotions.py 爬取指定QQ的全部说说方法
+- GetFreiendEmotion.py 爬取指定QQ的好友说说方法，支持json文件存储和数据库存储，支持断点继续（比较low）
+- ErroTest.py 错误测试用
+
+
+
+
+# 链接分析
 ## 1、获取好友
 按照空间的亲密度查找前200名好友的链接
 ```python
@@ -60,4 +98,4 @@ url='https://h5.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msgl
         "pos": pos 要获取的起始number
     }
 ```
-
+返回的是jsonp格式
