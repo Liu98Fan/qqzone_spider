@@ -136,13 +136,14 @@ def list_as_param(list):
 def get_friend_number(con,master):
     sql = "select uin from all_friends_score_tb where master="+str(master)
     con = con.cursor()
-    # try:
-    con.execute(sql)
-    result = con.fetchall()
-    return list(result)
-    # except Exception as e:
-    #     print('[Error]获取数据库好友uin失败'+str(e))
-    #     throw
+    try:
+        con.execute(sql)
+        result = con.fetchall()
+        return list(result)
+    except Exception as e:
+        print('[Error]获取数据库好友uin失败,即将检查并重新建表'+str(e))
+        raise e
+        
         
 if __name__ =="__main__":
     list = ['uin', 'name', 'index', 'chang_pos', 'score', 'special_flag', 'uncare_flag', 'img']
