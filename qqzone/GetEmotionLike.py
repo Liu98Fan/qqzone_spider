@@ -135,7 +135,7 @@ def get_all_like_data(spider,**kwarg):
 
 
 if __name__ == '__main__':
-    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
     spider = Spider(dirPath)
     spider.login()
     get_all_like_data(spider)
