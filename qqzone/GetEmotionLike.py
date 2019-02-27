@@ -244,7 +244,7 @@ def get_all_like_data(spider,**kwarg):
             'count':count + 1
             }
         print('[Success]记录成功，尝试重试,重试参数:'+str(param))
-        get_all_emotion(spider,
+        get_all_like_data(spider,
                 processed_list = param['processed_list'],
                 residue_list = param['residue_list'],
                 friend_list = param['friend_list'],
@@ -255,7 +255,7 @@ def get_all_like_data(spider,**kwarg):
 
 
 if __name__ == '__main__':
-    dirPath = 'D:\\spider\\qqzone\\userinfo.ini'
+    dirPath = 'D:\\liufanWorkspace\\qqzone_spider\\userinfo.ini'
     spider = Spider(dirPath)
     spider.login()
     get_all_like_data(spider)
