@@ -36,7 +36,7 @@ def create_table_from_dict(con,table_name,key_dict):
         if key in['pic','commentlist']:
             sql += "`"+key+"`"+" text DEFAULT NULL,"
             continue
-        if key in ['editMask','type']:
+        if key in ['editMask','type','addr']:
             sql += "`"+key+"`"+" varchar(255) DEFAULT NULL,"
             continue
         if value == -1:

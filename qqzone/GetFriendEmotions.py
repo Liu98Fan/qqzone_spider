@@ -24,7 +24,7 @@ def get_all_emotion(spider,**kwarg):
     residue_list = copy.copy(friend_list)
     try:
         for index,uin in enumerate(friend_list):
-            if type(uin) == 'tuple':
+            if type(uin) == tuple
                 uin = uin[0]
             print('[processing]开始处理第'+str(index)+'个账号'+str(uin)+'------------------------')
             get_emotion(spider,uin)
